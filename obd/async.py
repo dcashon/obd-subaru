@@ -45,8 +45,10 @@ class Async(OBD):
         Specialized for asynchronous value reporting.
     """
 
-    def __init__(self, portstr=None, baudrate=None, protocol=None, fast=True):
-        super(Async, self).__init__(portstr, baudrate, protocol, fast)
+    def __init__(self, portstr=None, baudrate=None, protocol=None, fast=True,
+                 conn_timeout=0.1):
+        super(Async, self).__init__(portstr, baudrate, protocol, fast,
+                                    conn_timeout)
         self.__commands    = {} # key = OBDCommand, value = Response
         self.__callbacks   = {} # key = OBDCommand, value = list of Functions
         self.__thread      = None

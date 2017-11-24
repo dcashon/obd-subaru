@@ -103,7 +103,7 @@ class ELM327:
 
 
 
-    def __init__(self, portname, baudrate, protocol):
+    def __init__(self, portname, baudrate, protocol, conn_timeout):
         """Initializes port by resetting device and gettings supported PIDs. """
 
         logger.info("Initializing ELM327: PORT=%s BAUD=%s PROTOCOL=%s" %
@@ -116,6 +116,7 @@ class ELM327:
         self.__status   = OBDStatus.NOT_CONNECTED
         self.__port     = None
         self.__protocol = UnknownProtocol([])
+        self.conn_timeout = conn_timeout
 
 
         # ------------- open port -------------
@@ -276,7 +277,7 @@ class ELM327:
 
         # before we change the timout, save the "normal" value
         timeout = self.__port.timeout
-        self.__port.timeout = 0.1 # we're only talking with the ELM, so things should go quickly
+        self.__port.timeout = self.conn_timeout # we're only talking with the ELM, so things should go quickly
 
         for baud in self._TRY_BAUDS:
             self.__port.baudrate = baud
