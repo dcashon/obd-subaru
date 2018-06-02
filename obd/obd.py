@@ -49,11 +49,11 @@ class OBD(object):
     """
 
     def __init__(self, portstr=None, baudrate=None, protocol=None, fast=True,
-                 conn_timeout=0.1):
+                 timeout=0.1):
         self.interface = None
         self.supported_commands = set(commands.base_commands())
         self.fast = fast # global switch for disabling optimizations
-        self.conn_timeout = conn_timeout
+        self.timeout = timeout
         self.__last_command = b"" # used for running the previous command with a CR
         self.__frame_counts = {} # keeps track of the number of return frames for each command
 
@@ -80,14 +80,14 @@ class OBD(object):
             for port in portnames:
                 logger.info("Attempting to use port: " + str(port))
                 self.interface = ELM327(port, baudrate, protocol,
-                                        self.conn_timeout)
+                                        self.timeout)
 
                 if self.interface.status() >= OBDStatus.ELM_CONNECTED:
                     break # success! stop searching for serial
         else:
             logger.info("Explicit port defined")
             self.interface = ELM327(portstr, baudrate, protocol,
-                                    self.conn_timeout)
+                                    self.timeout)
 
         # if the connection failed, close it
         if self.interface.status() == OBDStatus.NOT_CONNECTED:
