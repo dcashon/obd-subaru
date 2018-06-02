@@ -20,7 +20,7 @@ connection = obd.OBD(ports[0]) # connect to the first port in the list
 
 <br>
 
-### OBD(portstr=None, baudrate=None, protocol=None, fast=True):
+### OBD(portstr=None, baudrate=None, protocol=None, fast=True, timeout=0.1):
 
 `portstr`: The UNIX device file or Windows COM Port for your adapter. The default value (`None`) will auto select a port.
 
@@ -34,6 +34,8 @@ connection = obd.OBD(ports[0]) # connect to the first port in the list
 - Appends a response limit to the end of the command, telling the adapter to return after it receives *N* responses (rather than waiting and eventually timing out). This feature can be enabled and disabled for individual commands.
 
 Disabling fast mode will guarantee that python-OBD outputs the unaltered command for every request.
+
+`timeout`: Specifies the connection timeout.
 
 <br>
 
