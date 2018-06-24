@@ -35,7 +35,7 @@ connection = obd.OBD(ports[0]) # connect to the first port in the list
 
 Disabling fast mode will guarantee that python-OBD outputs the unaltered command for every request.
 
-`timeout`: Specifies the connection timeout.
+`timeout`: Specifies the connection timeout in seconds.
 
 <br>
 
