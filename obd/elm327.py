@@ -120,7 +120,7 @@ class ELM327:
 
         # ------------- open port -------------
         try:
-            self.__port = serial.Serial(portname, \
+            self.__port = serial.serial_for_url(portname, \
                                         parity   = serial.PARITY_NONE, \
                                         stopbits = 1, \
                                         bytesize = 8,
