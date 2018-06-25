@@ -3,8 +3,12 @@ import time
 import pytest
 from obd import commands, Unit
 
-STANDARD_WAIT_TIME = 0.2
-
+# NOTE: This is purposefully tuned slightly higher than the ELM's default
+#       message timeout of 200 milliseconds. This prevents us from
+#       inadvertently marking the first query of an async connection as
+#       null, since it may be the case that the first transaction incurs the
+#       ELM's internal timeout.
+STANDARD_WAIT_TIME = 0.3
 
 @pytest.fixture(scope="module")
 def obd(request):
