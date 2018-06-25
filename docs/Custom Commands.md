@@ -22,14 +22,15 @@ from obd.utils import bytes_to_int
 
 def rpm(messages):
     """ decoder for RPM messages """
-    d = messages[0].data
+    d = messages[0].data # only operate on a single message
+    d = d[2:] # chop off mode and PID bytes
     v = bytes_to_int(d) / 4.0  # helper function for converting byte arrays to ints
     return v * Unit.RPM # construct a Pint Quantity
 
 c = OBDCommand("RPM", \          # name
                "Engine RPM", \   # description
                b"010C", \        # command
-               2, \              # number of return bytes to expect
+               4, \              # number of return bytes to expect
                rpm, \            # decoding function
                ECU.ENGINE, \     # (optional) ECU filter
                True)             # (optional) allow a "01" to be added for speed
@@ -66,7 +67,7 @@ def <name>(<list_of_messages>):
     return <value>
 ```
 
-The return value of your decoder will be loaded into the `OBDResponse.value` field. Decoders are given a list of `Message` objects as an argument. If your decoder is called, this list is garaunteed to have at least one message object. Each `Message` object has a `data` property, which holds a parsed bytearray, and is also garauteed to have the number of bytes specified by the command.
+The return value of your decoder will be loaded into the `OBDResponse.value` field. Decoders are given a list of `Message` objects as an argument. If your decoder is called, this list is garaunteed to have at least one message object. Each `Message` object has a `data` property, which holds a parsed bytearray, and is also garauteed to have the number of bytes specified by the command. This bytearray includes any mode and PID bytes in the vehicle's response.
 
 *NOTE: If you are transitioning from an older version of Python-OBD (where decoders were given raw hex strings as arguments), you can use the `Message.hex()` function as a patch.*
 

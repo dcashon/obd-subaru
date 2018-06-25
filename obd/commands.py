@@ -86,7 +86,7 @@ __mode1__ = [
 
     #                      name                             description                    cmd  bytes       decoder           ECU       fast
     OBDCommand("PIDS_B"                     , "Supported PIDs [21-40]"                  , b"0120", 6, pid,                   ECU.ENGINE, True),
-    OBDCommand("DISTANCE_W_MIL"             , "Distance Traveled with MIL on"           , b"0121", 4, uas(0x25),              ECU.ENGINE, True),
+    OBDCommand("DISTANCE_W_MIL"             , "Distance Traveled with MIL on"           , b"0121", 4, uas(0x25),             ECU.ENGINE, True),
     OBDCommand("FUEL_RAIL_PRESSURE_VAC"     , "Fuel Rail Pressure (relative to vacuum)" , b"0122", 4, uas(0x19),             ECU.ENGINE, True),
     OBDCommand("FUEL_RAIL_PRESSURE_DIRECT"  , "Fuel Rail Pressure (direct inject)"      , b"0123", 4, uas(0x1B),             ECU.ENGINE, True),
     OBDCommand("O2_S1_WR_VOLTAGE"           , "02 Sensor 1 WR Lambda Voltage"           , b"0124", 6, sensor_voltage_big,    ECU.ENGINE, True),
@@ -102,7 +102,7 @@ __mode1__ = [
     OBDCommand("EVAPORATIVE_PURGE"          , "Commanded Evaporative Purge"             , b"012E", 3, percent,               ECU.ENGINE, True),
     OBDCommand("FUEL_LEVEL"                 , "Fuel Level Input"                        , b"012F", 3, percent,               ECU.ENGINE, True),
     OBDCommand("WARMUPS_SINCE_DTC_CLEAR"    , "Number of warm-ups since codes cleared"  , b"0130", 3, uas(0x01),             ECU.ENGINE, True),
-    OBDCommand("DISTANCE_SINCE_DTC_CLEAR"   , "Distance traveled since codes cleared"   , b"0131", 4, uas(0x25),              ECU.ENGINE, True),
+    OBDCommand("DISTANCE_SINCE_DTC_CLEAR"   , "Distance traveled since codes cleared"   , b"0131", 4, uas(0x25),             ECU.ENGINE, True),
     OBDCommand("EVAP_VAPOR_PRESSURE"        , "Evaporative system vapor pressure"       , b"0132", 4, evap_pressure,         ECU.ENGINE, True),
     OBDCommand("BAROMETRIC_PRESSURE"        , "Barometric Pressure"                     , b"0133", 3, pressure,              ECU.ENGINE, True),
     OBDCommand("O2_S1_WR_CURRENT"           , "02 Sensor 1 WR Lambda Current"           , b"0134", 6, current_centered,      ECU.ENGINE, True),
