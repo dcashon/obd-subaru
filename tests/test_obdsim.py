@@ -19,7 +19,7 @@ def obd(request):
 
 
 @pytest.fixture(scope="module")
-def async(request):
+def asynchronous(request):
     """provides an OBD *Async* connection object for obdsim"""
     import obd
     port = request.config.getoption("--port")
@@ -50,18 +50,18 @@ def test_rpm(obd):
 
 @pytest.mark.skipif(not pytest.config.getoption("--port"),
                     reason="needs --port=<port> to run")
-def test_async_query(async):
+def test_async_query(asynchronous):
 
     rs = []
-    async.watch(commands.RPM)
-    async.start()
+    asynchronous.watch(commands.RPM)
+    asynchronous.start()
 
     for i in range(5):
         time.sleep(STANDARD_WAIT_TIME)
-        rs.append(async.query(commands.RPM))
+        rs.append(asynchronous.query(commands.RPM))
 
-    async.stop()
-    async.unwatch_all()
+    asynchronous.stop()
+    asynchronous.unwatch_all()
 
     # make sure we got data
     assert(len(rs) > 0)
@@ -70,14 +70,14 @@ def test_async_query(async):
 
 @pytest.mark.skipif(not pytest.config.getoption("--port"),
                     reason="needs --port=<port> to run")
-def test_async_callback(async):
+def test_async_callback(asynchronous):
 
     rs = []
-    async.watch(commands.RPM, callback=rs.append)
-    async.start()
+    asynchronous.watch(commands.RPM, callback=rs.append)
+    asynchronous.start()
     time.sleep(STANDARD_WAIT_TIME)
-    async.stop()
-    async.unwatch_all()
+    asynchronous.stop()
+    asynchronous.unwatch_all()
 
     # make sure we got data
     assert(len(rs) > 0)
@@ -86,44 +86,44 @@ def test_async_callback(async):
 
 @pytest.mark.skipif(not pytest.config.getoption("--port"),
                     reason="needs --port=<port> to run")
-def test_async_paused(async):
+def test_async_paused(asynchronous):
 
-    assert(not async.running)
-    async.watch(commands.RPM)
-    async.start()
-    assert(async.running)
+    assert(not asynchronous.running)
+    asynchronous.watch(commands.RPM)
+    asynchronous.start()
+    assert(asynchronous.running)
 
-    with async.paused() as was_running:
-        assert(not async.running)
+    with asynchronous.paused() as was_running:
+        assert(not asynchronous.running)
         assert(was_running)
 
-    assert(async.running)
-    async.stop()
-    assert(not async.running)
+    assert(asynchronous.running)
+    asynchronous.stop()
+    assert(not asynchronous.running)
 
 
 @pytest.mark.skipif(not pytest.config.getoption("--port"),
                     reason="needs --port=<port> to run")
-def test_async_unwatch(async):
+def test_async_unwatch(asynchronous):
 
     watched_rs = []
     unwatched_rs = []
 
-    async.watch(commands.RPM)
-    async.start()
+    asynchronous.watch(commands.RPM)
+    asynchronous.start()
 
     for i in range(5):
         time.sleep(STANDARD_WAIT_TIME)
-        watched_rs.append(async.query(commands.RPM))
+        watched_rs.append(asynchronous.query(commands.RPM))
 
-    with async.paused():
-        async.unwatch(commands.RPM)
+    with asynchronous.paused():
+        asynchronous.unwatch(commands.RPM)
 
     for i in range(5):
         time.sleep(STANDARD_WAIT_TIME)
-        unwatched_rs.append(async.query(commands.RPM))
+        unwatched_rs.append(asynchronous.query(commands.RPM))
 
-    async.stop()
+    asynchronous.stop()
 
     # the watched commands
     assert(len(watched_rs) > 0)
@@ -136,22 +136,22 @@ def test_async_unwatch(async):
 
 @pytest.mark.skipif(not pytest.config.getoption("--port"),
                     reason="needs --port=<port> to run")
-def test_async_unwatch_callback(async):
+def test_async_unwatch_callback(asynchronous):
 
     a_rs = []
     b_rs = []
-    async.watch(commands.RPM, callback=a_rs.append)
-    async.watch(commands.RPM, callback=b_rs.append)
+    asynchronous.watch(commands.RPM, callback=a_rs.append)
+    asynchronous.watch(commands.RPM, callback=b_rs.append)
 
-    async.start()
+    asynchronous.start()
     time.sleep(STANDARD_WAIT_TIME)
 
-    with async.paused():
-        async.unwatch(commands.RPM, callback=b_rs.append)
+    with asynchronous.paused():
+        asynchronous.unwatch(commands.RPM, callback=b_rs.append)
 
     time.sleep(STANDARD_WAIT_TIME)
-    async.stop()
-    async.unwatch_all()
+    asynchronous.stop()
+    asynchronous.unwatch_all()
 
     assert(all([ good_rpm_response(r) for r in a_rs + b_rs ]))
     assert(len(a_rs) > len(b_rs))
