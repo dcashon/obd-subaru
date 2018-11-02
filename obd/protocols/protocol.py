@@ -207,7 +207,7 @@ class Protocol(object):
 
         # parse frames into whole messages
         messages = []
-        for ecu in frames_by_ECU:
+        for ecu in sorted(frames_by_ECU.keys()):
 
             # new message object with a copy of the raw data
             # and frames addressed for this ecu
