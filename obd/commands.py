@@ -342,7 +342,9 @@ class Commands():
 
         if isinstance(key, int):
             return self.modes[key]
-        elif isinstance(key, str) or isinstance(key, unicode):
+        elif isinstance(key, str):
+            return self.__dict__[key]
+        elif sys.version_info[0] == 2 and isinstance(key, basestring):
             return self.__dict__[key]
         else:
             logger.warning("OBD commands can only be retrieved by PID value or dict name")
