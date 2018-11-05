@@ -340,11 +340,14 @@ class Commands():
             obd.commands[1][12] # mode 1, PID 12 (RPM)
         """
 
+        try:
+            basestring
+        except NameError:
+            basestring = str
+
         if isinstance(key, int):
             return self.modes[key]
-        elif isinstance(key, str):
-            return self.__dict__[key]
-        elif sys.version_info[0] == 2 and isinstance(key, basestring):
+        elif isinstance(key, basestring):
             return self.__dict__[key]
         else:
             logger.warning("OBD commands can only be retrieved by PID value or dict name")
