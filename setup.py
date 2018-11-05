@@ -3,10 +3,15 @@
 
 from setuptools import setup, find_packages
 
+with open("README.md", "r") as readme:
+    long_description = readme.read()
+
 setup(
     name="obd",
     version="0.7.0",
     description=("Serial module for handling live sensor data from a vehicle's OBD-II port"),
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     classifiers=[
         "Operating System :: POSIX :: Linux",
         "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
