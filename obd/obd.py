@@ -38,6 +38,7 @@ from .elm327 import ELM327
 from .commands import commands
 from .OBDResponse import OBDResponse
 from .utils import scan_serial, OBDStatus
+from .protocols import ECU_HEADER
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +56,7 @@ class OBD(object):
         self.fast = fast # global switch for disabling optimizations
         self.timeout = timeout
         self.__last_command = b"" # used for running the previous command with a CR
+        self.__last_header = ECU_HEADER.ENGINE # for comparing with the previously used header
         self.__frame_counts = {} # keeps track of the number of return frames for each command
 
         logger.info("======================= python-OBD (v%s) =======================" % __version__)
@@ -138,6 +140,19 @@ class OBD(object):
         logger.info("finished querying with %d commands supported" % len(self.supported_commands))
 
 
+    def __set_header(self, header):
+        if header == self.__last_header:
+            return
+        r = self.interface.send_and_parse(b'AT SH ' + header + b' ')
+        if not r:
+            logger.info("Set Header ('AT SH %s') did not return data", header)
+            return OBDResponse()
+        if "\n".join([ m.raw() for m in r ]) != "OK":
+            logger.info("Set Header ('AT SH %s') did not return 'OK'", header)
+            return OBDResponse()
+        self.__last_header = header
+
+
     def close(self):
         """
             Closes the connection, and clears supported_commands
@@ -147,6 +162,7 @@ class OBD(object):
 
         if self.interface is not None:
             logger.info("Closing connection")
+            self.__set_header(ECU_HEADER.ENGINE)
             self.interface.close()
             self.interface = None
 
@@ -254,7 +270,8 @@ class OBD(object):
         if not force and not self.test_cmd(cmd):
             return OBDResponse()
 
-        # send command and retrieve message
+        self.__set_header(cmd.header)
+
         logger.info("Sending command: %s" % str(cmd))
         cmd_string = self.__build_command_string(cmd)
         messages = self.interface.send_and_parse(cmd_string)

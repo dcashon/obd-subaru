@@ -30,7 +30,7 @@
 #                                                                      #
 ########################################################################
 
-from .protocol import ECU
+from .protocol import ECU, ECU_HEADER
 
 from .protocol_unknown import UnknownProtocol
 

@@ -31,7 +31,7 @@
 ########################################################################
 
 from .utils import *
-from .protocols import ECU
+from .protocols import ECU, ECU_HEADER
 from .OBDResponse import OBDResponse
 
 import logging
@@ -47,7 +47,8 @@ class OBDCommand():
                  _bytes,
                  decoder,
                  ecu=ECU.ALL,
-                 fast=False):
+                 fast=False,
+                 header=ECU_HEADER.ENGINE):
         self.name      = name        # human readable name (also used as key in commands dict)
         self.desc      = desc        # human readable description
         self.command   = command     # command string
@@ -55,6 +56,7 @@ class OBDCommand():
         self.decode    = decoder     # decoding function
         self.ecu       = ecu         # ECU ID from which this command expects messages from
         self.fast      = fast        # can an extra digit be added to the end of the command? (to make the ELM return early)
+        self.header    = header      # ECU header used for the queries
 
     def clone(self):
         return OBDCommand(self.name,
