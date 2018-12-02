@@ -220,6 +220,9 @@ class ELM327:
 
         # -------------- 0100 (first command, SEARCH protocols) --------------
         r0100 = self.__send(b"0100")
+        if self.__has_message(r0100, "UNABLE TO CONNECT"):
+            logger.error("Failed to query protocol 0100: unable to connect")
+            return False
 
         # ------------------- ATDPN (list protocol number) -------------------
         r = self.__send(b"ATDPN")
