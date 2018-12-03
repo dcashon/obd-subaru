@@ -103,7 +103,8 @@ class ELM327:
 
 
 
-    def __init__(self, portname, baudrate, protocol, timeout):
+    def __init__(self, portname, baudrate, protocol, timeout,
+                 check_voltage=True):
         """Initializes port by resetting device and gettings supported PIDs. """
 
         logger.info("Initializing ELM327: PORT=%s BAUD=%s PROTOCOL=%s" %
@@ -168,6 +169,22 @@ class ELM327:
         # by now, we've successfuly communicated with the ELM, but not the car
         self.__status = OBDStatus.ELM_CONNECTED
 
+        # -------------------------- AT RV (read volt) ------------------------
+        if check_voltage:
+            r = self.__send(b"AT RV")
+            if not r or len(r) != 1 or r[0] == '':
+                self.__error("No answer from 'AT RV'")
+                return
+            try:
+                if float(r[0].lower().replace('v', '')) < 6:
+                    logger.error("OBD2 socket disconnected")
+                    return
+            except ValueError as e:
+                self.__error("Incorrect response from 'AT RV'")
+                return
+            # by now, we've successfuly connected to the OBD socket
+            self.__status = OBDStatus.OBD_CONNECTED
+
         # try to communicate with the car, and load the correct protocol parser
         if self.set_protocol(protocol):
             self.__status = OBDStatus.CAR_CONNECTED
@@ -178,7 +195,11 @@ class ELM327:
                             self.__protocol.ELM_ID,
                         ))
         else:
-            logger.error("Connected to the adapter, but failed to connect to the vehicle")
+            if self.__status == OBDStatus.OBD_CONNECTED:
+                logger.error("Adapter connected, but the ignition is off")
+            else:
+                logger.error("Connected to the adapter, "\
+                             "but failed to connect to the vehicle")
 
 
     def set_protocol(self, protocol):

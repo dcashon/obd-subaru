@@ -46,6 +46,7 @@ class OBDStatus:
 
     NOT_CONNECTED = "Not Connected"
     ELM_CONNECTED = "ELM Connected"
+    OBD_CONNECTED = "OBD Connected"
     CAR_CONNECTED = "Car Connected"
 
 
