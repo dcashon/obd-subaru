@@ -45,6 +45,11 @@ Basic data models for all protocols to use
 """
 
 
+class ECU_HEADER:
+    """ Values for the ECU headers """
+    ENGINE = b'7E0'
+
+
 class ECU:
     """ constant flags used for marking and filtering messages """
 
