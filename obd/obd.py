@@ -50,7 +50,7 @@ class OBD(object):
     """
 
     def __init__(self, portstr=None, baudrate=None, protocol=None, fast=True,
-                 timeout=0.1):
+                 timeout=0.1, check_voltage=True):
         self.interface = None
         self.supported_commands = set(commands.base_commands())
         self.fast = fast # global switch for disabling optimizations
@@ -60,12 +60,13 @@ class OBD(object):
         self.__frame_counts = {} # keeps track of the number of return frames for each command
 
         logger.info("======================= python-OBD (v%s) =======================" % __version__)
-        self.__connect(portstr, baudrate, protocol) # initialize by connecting and loading sensors
+        self.__connect(portstr, baudrate, protocol,
+                       check_voltage) # initialize by connecting and loading sensors
         self.__load_commands()            # try to load the car's supported commands
         logger.info("===================================================================")
 
 
-    def __connect(self, portstr, baudrate, protocol):
+    def __connect(self, portstr, baudrate, protocol, check_voltage):
         """
             Attempts to instantiate an ELM327 connection object.
         """
@@ -82,14 +83,14 @@ class OBD(object):
             for port in portnames:
                 logger.info("Attempting to use port: " + str(port))
                 self.interface = ELM327(port, baudrate, protocol,
-                                        self.timeout)
+                                        self.timeout, check_voltage)
 
                 if self.interface.status() >= OBDStatus.ELM_CONNECTED:
                     break # success! stop searching for serial
         else:
             logger.info("Explicit port defined")
             self.interface = ELM327(portstr, baudrate, protocol,
-                                    self.timeout)
+                                    self.timeout, check_voltage)
 
         # if the connection failed, close it
         if self.interface.status() == OBDStatus.NOT_CONNECTED:

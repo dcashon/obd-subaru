@@ -20,7 +20,7 @@ connection = obd.OBD(ports[0]) # connect to the first port in the list
 
 <br>
 
-### OBD(portstr=None, baudrate=None, protocol=None, fast=True, timeout=0.1):
+### OBD(portstr=None, baudrate=None, protocol=None, fast=True, timeout=0.1, check_voltage=True):
 
 `portstr`: The UNIX device file or Windows COM Port for your adapter. The default value (`None`) will auto select a port.
 
@@ -36,6 +36,8 @@ connection = obd.OBD(ports[0]) # connect to the first port in the list
 Disabling fast mode will guarantee that python-OBD outputs the unaltered command for every request.
 
 `timeout`: Specifies the connection timeout in seconds.
+
+`check_voltage`: Optional argument that is `True` by default and when set to `False` disables the detection of the car supply voltage on OBDII port (which should be about 12V). This control assumes that, if the voltage is lower than 6V, the OBDII port is disconnected from the car. If the option is enabled, it adds the `OBDStatus.OBD_CONNECTED` status, which is set when enough voltage is returned (socket connected to the car) but the ignition is off (no communication with the vehicle). Setting the option to `False` should be needed when the adapter does not support the voltage pin or more generally when the hardware provides unreliable results, or if the pin reads the switched ignition voltage rather than the battery positive (this depends on the car).
 
 <br>
 
@@ -58,7 +60,7 @@ r = connection.query(obd.commands.RPM) # returns the response from the car
 
 ### status()
 
-Returns a string value reflecting the status of the connection. These values should be compared against the `OBDStatus` class. The fact that they are strings is for human readability only. There are currently 3 possible states:
+Returns a string value reflecting the status of the connection after OBD() or Async() methods are executed. These values should be compared against the `OBDStatus` class. The fact that they are strings is for human readability only. There are currently 4 possible states:
 
 ```python
 from obd import OBDStatus
@@ -69,11 +71,21 @@ OBDStatus.NOT_CONNECTED # "Not Connected"
 # successful communication with the ELM327 adapter
 OBDStatus.ELM_CONNECTED # "ELM Connected"
 
-# successful communication with the ELM327 and the vehicle
+# successful communication with the ELM327 adapter,
+# OBD port connected to the car, ignition off
+# (not available with argument "check_voltage=False")
+OBDStatus.OBD_CONNECTED # "OBD Connected"
+
+# successful communication with the ELM327 and the
+# vehicle; ignition on
 OBDStatus.CAR_CONNECTED # "Car Connected"
 ```
 
-The middle state, `ELM_CONNECTED` is mostly for diagnosing errors. When a proper connection is established, you will never encounter this value.
+The status is set by `OBD()` or `Async()` methods and remains unmodified during the connection. `status()` shall not be checked after the queries to verify that the connection is kept active.
+
+`ELM_CONNECTED` and `OBD_CONNECTED` are mostly for diagnosing errors. When a proper connection is established with the vehicle, you will never encounter these values.
+
+The ELM327 controller allows OBD Commands and AT Commands. In general, OBD Commands (which interact with the car) can be succesfully performed when the ignition is on, while AT Commands (which generally interact with the ELM327 controller) are always accepted. As the connection phase (for both `OBD` and `Async` objects) also performs OBD protocol commands (after the initial set of AT Commands) and returns the “Car Connected” status (“CAR_CONNECTED”) if the overall connection phase is successful, this status means that the serial communication is valid, that the ELM327 adapter is appropriately responding, that the OBDII socket is connected to the car and also that the ignition is on. “OBD Connected” status (“OBD_CONNECTED”) is returned when the OBDII socket is connected and the ignition is off, while the "ELM Connected" status (“ELM_CONNECTED”) means that the ELM327 processor is reached but the OBDII socket is not connected to the car. “OBD Connected” is controlled by the `check_voltage` option that by default is set to `True` and gets the ignition status when the socket is connected. If the OBDII socket does not support the unswitched battery positive supply, or the OBDII adapter cannot detect it, then the `check_voltage` option should be set to `False`; in such case, the "ELM Connected" status is returned when the socket is not connected or when the ignition is off, with no differentiation.
 
 ---
 
