@@ -444,9 +444,16 @@ class ELM327:
         if self.__port:
             cmd += b"\r" # terminate with carriage return in accordance with ELM327 and STN11XX specifications
             logger.debug("write: " + repr(cmd))
-            self.__port.flushInput() # dump everything in the input buffer
-            self.__port.write(cmd) # turn the string into bytes and write
-            self.__port.flush() # wait for the output buffer to finish transmitting
+            try:
+                self.__port.flushInput() # dump everything in the input buffer
+                self.__port.write(cmd) # turn the string into bytes and write
+                self.__port.flush() # wait for the output buffer to finish transmitting
+            except Exception:
+                self.__status = OBDStatus.NOT_CONNECTED
+                self.__port.close()
+                self.__port = None
+                logger.critical("Device disconnected while writing")
+                return
         else:
             logger.info("cannot perform __write() when unconnected")
 
@@ -466,7 +473,14 @@ class ELM327:
 
         while True:
             # retrieve as much data as possible
-            data = self.__port.read(self.__port.in_waiting or 1)
+            try:
+                data = self.__port.read(self.__port.in_waiting or 1)
+            except Exception:
+                self.__status = OBDStatus.NOT_CONNECTED
+                self.__port.close()
+                self.__port = None
+                logger.critical("Device disconnected while reading")
+                return []
 
             # if nothing was recieved
             if not data:

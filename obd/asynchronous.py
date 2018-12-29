@@ -46,7 +46,7 @@ class Async(OBD):
     """
 
     def __init__(self, portstr=None, baudrate=None, protocol=None, fast=True,
-                 timeout=0.1, check_voltage=True):
+                 timeout=0.1, check_voltage=True, delay_cmds=0.25):
         super(Async, self).__init__(portstr, baudrate, protocol, fast,
                                     timeout, check_voltage)
         self.__commands    = {} # key = OBDCommand, value = Response
@@ -54,6 +54,7 @@ class Async(OBD):
         self.__thread      = None
         self.__running     = False
         self.__was_running = False # used with __enter__() and __exit__()
+        self.__delay_cmds  = delay_cmds
 
 
     @property
@@ -215,6 +216,11 @@ class Async(OBD):
             if len(self.__commands) > 0:
                 # loop over the requested commands, send, and collect the response
                 for c in self.__commands:
+                    if not self.is_connected():
+                        logger.info("Async thread terminated because device disconnected")
+                        self.__running = False
+                        self.__thread = None
+                        return
 
                     # force, since commands are checked for support in watch()
                     r = super(Async, self).query(c, force=True)
@@ -225,6 +231,7 @@ class Async(OBD):
                     # fire the callbacks, if there are any
                     for callback in self.__callbacks[c]:
                         callback(r)
+                time.sleep(self.__delay_cmds)
 
             else:
                 time.sleep(0.25) # idle

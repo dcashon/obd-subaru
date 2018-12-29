@@ -2,10 +2,18 @@ Since the standard `query()` function is blocking, it can be a hazard for UI eve
 
 The update loop is controlled by calling `start()` and `stop()`. To subscribe a command for updating, call `watch()` with your requested OBDCommand. Because the update loop is threaded, commands can only be `watch`ed while the loop is `stop`ed.
 
+General sequence to enable an asynchronous connection allowing non-blocking queries:
+- *Async()* # set-up the connection (to be used in place of *OBD()*)
+- *watch()* # add commands to the watch list
+- *start()* # start a thread performing the update loop in background
+- *query()* # perform the non-blocking query
+
+Example:
+
 ```python
 import obd
 
-connection = obd.Async() # same constructor as 'obd.OBD()'
+connection = obd.Async() # same constructor as 'obd.OBD()'; see below.
 
 connection.watch(obd.commands.RPM) # keep track of the RPM
 
@@ -36,6 +44,15 @@ connection.stop()
 ```
 
 <br>
+
+---
+
+### Async(portstr=None, baudrate=None, protocol=None, fast=True, timeout=0.1, check_voltage=True, delay_cmds=0.25)
+
+Create asynchronous connection.
+Arguments are the same as 'obd.OBD()' with the addition of *delay_cmds*, which defaults to 0.25 seconds and allows
+controlling a delay after each loop executing all *watch*ed commands in background. If *delay_cmds* is set to 0,
+the background thread continuously repeats the execution of all commands without any delay.
 
 ---
 
