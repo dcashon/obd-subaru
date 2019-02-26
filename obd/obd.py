@@ -170,6 +170,20 @@ class OBD(object):
         else:
             return self.interface.status()
 
+    def low_power(self):
+        """ Enter low power mode """
+        if self.interface is None:
+            return OBDStatus.NOT_CONNECTED
+        else:
+            return self.interface.low_power()
+
+    def normal_power(self):
+        """ Exit low power mode """
+        if self.interface is None:
+            return OBDStatus.NOT_CONNECTED
+        else:
+            return self.interface.normal_power()
+
     # not sure how useful this would be
 
     # def ecus(self):
