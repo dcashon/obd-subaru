@@ -104,7 +104,7 @@ class ELM327:
     _TRY_BAUDS = [38400, 9600, 230400, 115200, 57600, 19200]
 
     def __init__(self, portname, baudrate, protocol, timeout,
-                 check_voltage=True):
+                 check_voltage=True, start_low_power=False):
         """Initializes port by resetting device and gettings supported PIDs. """
 
         logger.info("Initializing ELM327: PORT=%s BAUD=%s PROTOCOL=%s" %
@@ -133,6 +133,11 @@ class ELM327:
         except OSError as e:
             self.__error(e)
             return
+
+        # If we start with the IC in the low power state we need to wake it up
+        if start_low_power:
+            self.__write(b" ")
+            time.sleep(1)
 
         # ------------------------ find the ELM's baud ------------------------
 
