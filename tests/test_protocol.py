@@ -1,5 +1,3 @@
-
-import random
 from obd.protocols import *
 from obd.protocols.protocol import Frame, Message
 
@@ -13,7 +11,7 @@ def test_ECU():
         assert (ECU.ALL & ecu) > 0, "ECU: %d is not included in ECU.ALL" % ecu
 
         for other_ecu in tested:
-            assert (ecu & other_ecu) == 0, "ECU: %d has a conflicting bit with another ECU constant" %ecu
+            assert (ecu & other_ecu) == 0, "ECU: %d has a conflicting bit with another ECU constant" % ecu
 
         tested.append(ecu)
 
@@ -22,17 +20,16 @@ def test_frame():
     # constructor
     frame = Frame("asdf")
     assert frame.raw == "asdf", "Frame failed to accept raw data as __init__ argument"
-    assert frame.priority  == None
-    assert frame.addr_mode == None
-    assert frame.rx_id     == None
-    assert frame.tx_id     == None
-    assert frame.type      == None
-    assert frame.seq_index == 0
-    assert frame.data_len  == None
+    assert frame.priority is None
+    assert frame.addr_mode is None
+    assert frame.rx_id is None
+    assert frame.tx_id is None
+    assert frame.type is None
+    assert frame.seq_index is 0
+    assert frame.data_len is None
 
 
 def test_message():
-
     # constructor
     frame = Frame("raw input from OBD tool")
     frame.tx_id = 42
@@ -44,9 +41,9 @@ def test_message():
 
     assert message.frames == frames
     assert message.ecu == ECU.UNKNOWN
-    assert message.tx_id == 42 # this is dynamically read from the first frame
+    assert message.tx_id == 42  # this is dynamically read from the first frame
 
-    assert Message([]).tx_id == None # if no frames are given, then we can't report a tx_id
+    assert Message([]).tx_id is None  # if no frames are given, then we can't report a tx_id
 
 
 def test_message_hex():
