@@ -30,23 +30,20 @@
 #                                                                      #
 ########################################################################
 
-from binascii import unhexlify
-from obd.utils import contiguous
-from .protocol import Protocol, Message, Frame, ECU
-
 import logging
+from binascii import unhexlify
+
+from obd.utils import contiguous
+from .protocol import Protocol
 
 logger = logging.getLogger(__name__)
 
 
 class LegacyProtocol(Protocol):
-
     TX_ID_ENGINE = 0x10
-
 
     def __init__(self, lines_0100):
         Protocol.__init__(self, lines_0100)
-
 
     def parse_frame(self, frame):
 
@@ -77,11 +74,10 @@ class LegacyProtocol(Protocol):
 
         # read header information
         frame.priority = raw_bytes[0]
-        frame.rx_id    = raw_bytes[1]
-        frame.tx_id    = raw_bytes[2]
+        frame.rx_id = raw_bytes[1]
+        frame.tx_id = raw_bytes[2]
 
         return True
-
 
     def parse_message(self, message):
 
@@ -117,7 +113,7 @@ class LegacyProtocol(Protocol):
             # 48 6B 10 43 03 04 00 00 00 00 ck
             #             [     Data      ]
 
-            message.data = bytearray([0x43, 0x00]) # forge the mode byte and CAN's DTC_count byte
+            message.data = bytearray([0x43, 0x00])  # forge the mode byte and CAN's DTC_count byte
             for f in frames:
                 message.data += f.data[1:]
 
@@ -131,7 +127,7 @@ class LegacyProtocol(Protocol):
 
                 message.data = frames[0].data
 
-            else: # len(frames) > 1:
+            else:  # len(frames) > 1:
                 # generic multiline requests carry an order byte
 
                 # Ex.
@@ -158,15 +154,14 @@ class LegacyProtocol(Protocol):
                 # now that they're in order, accumulate the data from each frame
 
                 # preserve the first frame's mode and PID bytes (for consistency with CAN)
-                frames[0].data.pop(2) # remove the sequence byte
+                frames[0].data.pop(2)  # remove the sequence byte
                 message.data = frames[0].data
 
                 # add the data from the remaining frames
                 for f in frames[1:]:
-                    message.data += f.data[3:] # loose the mode/pid/seq bytes
+                    message.data += f.data[3:]  # loose the mode/pid/seq bytes
 
         return True
-
 
 
 ##############################################
@@ -176,37 +171,26 @@ class LegacyProtocol(Protocol):
 ##############################################
 
 
-
 class SAE_J1850_PWM(LegacyProtocol):
     ELM_NAME = "SAE J1850 PWM"
     ELM_ID = "1"
-    def __init__(self, lines_0100):
-        LegacyProtocol.__init__(self, lines_0100)
 
 
 class SAE_J1850_VPW(LegacyProtocol):
     ELM_NAME = "SAE J1850 VPW"
     ELM_ID = "2"
-    def __init__(self, lines_0100):
-        LegacyProtocol.__init__(self, lines_0100)
 
 
 class ISO_9141_2(LegacyProtocol):
     ELM_NAME = "ISO 9141-2"
     ELM_ID = "3"
-    def __init__(self, lines_0100):
-        LegacyProtocol.__init__(self, lines_0100)
 
 
 class ISO_14230_4_5baud(LegacyProtocol):
     ELM_NAME = "ISO 14230-4 (KWP 5BAUD)"
     ELM_ID = "4"
-    def __init__(self, lines_0100):
-        LegacyProtocol.__init__(self, lines_0100)
 
 
 class ISO_14230_4_fast(LegacyProtocol):
     ELM_NAME = "ISO 14230-4 (KWP FAST)"
     ELM_ID = "5"
-    def __init__(self, lines_0100):
-        LegacyProtocol.__init__(self, lines_0100)

@@ -30,16 +30,15 @@
 #                                                                      #
 ########################################################################
 
-from .protocols import ECU
+import logging
+
 from .OBDCommand import OBDCommand
 from .decoders import *
-
-import logging
+from .protocols import ECU
 
 logger = logging.getLogger(__name__)
 
-
-
+# flake8: noqa
 '''
 Define command tables
 '''
@@ -153,27 +152,23 @@ __mode1__ = [
     OBDCommand("EMISSION_REQ"               , "Designed emission requirements"          , b"015F", 3, drop,                  ECU.ENGINE, True),
 ]
 
-
 # mode 2 is the same as mode 1, but returns values from when the DTC occured
 __mode2__ = []
 for c in __mode1__:
     c = c.clone()
-    c.command = b"02" + c.command[2:] # change the mode: 0100 ---> 0200
+    c.command = b"02" + c.command[2:]  # change the mode: 0100 ---> 0200
     c.name = "DTC_" + c.name
     c.desc = "DTC " + c.desc
     if c.decode == pid:
-        c.decode = drop # Never send mode 02 pid requests (use mode 01 instead)
+        c.decode = drop  # Never send mode 02 pid requests (use mode 01 instead)
     __mode2__.append(c)
 
-
 __mode3__ = [
-    #                      name                             description                    cmd  bytes       decoder           ECU        fast
-    OBDCommand("GET_DTC"                    , "Get DTCs"                                , b"03",   0, dtc,                   ECU.ALL,     False),
+    OBDCommand("GET_DTC", "Get DTCs", b"03", 0, dtc, ECU.ALL, False),
 ]
 
 __mode4__ = [
-    #                      name                             description                    cmd  bytes       decoder           ECU        fast
-    OBDCommand("CLEAR_DTC"                  , "Clear DTCs and Freeze data"              , b"04",   0, drop,                  ECU.ALL,     False),
+    OBDCommand("CLEAR_DTC", "Clear DTCs and Freeze data", b"04", 0, drop, ECU.ALL, False),
 ]
 
 __mode6__ = [
@@ -281,28 +276,18 @@ __mode6__ = [
 ]
 
 __mode7__ = [
-    #                      name                             description                    cmd  bytes       decoder                    ECU        fast
-    OBDCommand("GET_CURRENT_DTC"             , "Get DTCs from the current/last driving cycle"   , b"07",   0, dtc,                   ECU.ALL,     False),
-]
-
-__mode9__ = [
-    #                      name                             description                    cmd  bytes       decoder           ECU        fast
-    # OBDCommand("PIDS_9A"                    , "Supported PIDs [01-20]"                  , b"0900", 4, pid,                   ECU.ENGINE,  True),
-    # OBDCommand("VIN_MESSAGE_COUNT"          , "VIN Message Count"                       , b"0901", 1, uas(0x01),             ECU.ENGINE,  True),
-    # OBDCommand("VIN"                        , "Get Vehicle Identification Number"       , b"0902", 20, raw_string,           ECU.ENGINE,  True),
+    OBDCommand("GET_CURRENT_DTC", "Get DTCs from the current/last driving cycle", b"07", 0, dtc, ECU.ALL, False),
 ]
 
 __misc__ = [
-    #                      name                             description                    cmd  bytes       decoder           ECU        fast
-    OBDCommand("ELM_VERSION"                , "ELM327 version string"                   , b"ATI",  0, raw_string,            ECU.UNKNOWN, False),
-    OBDCommand("ELM_VOLTAGE"                , "Voltage detected by OBD-II adapter"      , b"ATRV", 0, elm_voltage,           ECU.UNKNOWN, False),
+    OBDCommand("ELM_VERSION", "ELM327 version string", b"ATI", 0, raw_string, ECU.UNKNOWN, False),
+    OBDCommand("ELM_VOLTAGE", "Voltage detected by OBD-II adapter", b"ATRV", 0, elm_voltage, ECU.UNKNOWN, False),
 ]
 
-
-
-'''
+"""
 Assemble the command tables by mode, and allow access by name
-'''
+"""
+
 
 class Commands():
     def __init__(self):
@@ -318,7 +303,6 @@ class Commands():
             __mode6__,
             __mode7__,
             [],
-            __mode9__,
         ]
 
         # allow commands to be accessed by name
@@ -329,7 +313,6 @@ class Commands():
 
         for c in __misc__:
             self.__dict__[c.name] = c
-
 
     def __getitem__(self, key):
         """
@@ -352,16 +335,13 @@ class Commands():
         else:
             logger.warning("OBD commands can only be retrieved by PID value or dict name")
 
-
     def __len__(self):
         """ returns the number of commands supported by python-OBD """
         return sum([len(mode) for mode in self.modes])
 
-
     def __contains__(self, name):
         """ calls has_name(s) """
         return self.has_name(name)
-
 
     def base_commands(self):
         """
@@ -378,25 +358,21 @@ class Commands():
             self.ELM_VOLTAGE,
         ]
 
-
     def pid_getters(self):
         """ returns a list of PID GET commands """
         getters = []
         for mode in self.modes:
-            getters += [ cmd for cmd in mode if (cmd and cmd.decode == pid) ]
+            getters += [cmd for cmd in mode if (cmd and cmd.decode == pid)]
         return getters
-
 
     def has_command(self, c):
         """ checks for existance of a command by OBDCommand object """
         return c in self.__dict__.values()
 
-
     def has_name(self, name):
         """ checks for existance of a command by name """
         # isupper() rejects all the normal properties
         return name.isupper() and name in self.__dict__
-
 
     def has_pid(self, mode, pid):
         """ checks for existance of a command by int mode and int pid """
@@ -408,7 +384,7 @@ class Commands():
             return False
 
         # make sure that the command isn't reserved
-        return (self.modes[mode][pid] is not None)
+        return self.modes[mode][pid] is not None
 
 
 # export this object

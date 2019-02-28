@@ -30,13 +30,12 @@
 #                                                                      #
 ########################################################################
 
-from binascii import hexlify
-from obd.utils import isHex, bitarray
-
 import logging
+from binascii import hexlify
+
+from obd.utils import isHex, BitArray
 
 logger = logging.getLogger(__name__)
-
 
 """
 
@@ -53,35 +52,37 @@ class ECU_HEADER:
 class ECU:
     """ constant flags used for marking and filtering messages """
 
-    ALL          = 0b11111111 # used by OBDCommands to accept messages from any ECU
-    ALL_KNOWN    = 0b11111110 # used to ignore unknown ECUs, since this lib probably can't handle them
+    ALL = 0b11111111  # used by OBDCommands to accept messages from any ECU
+    ALL_KNOWN = 0b11111110  # used to ignore unknown ECUs, since this lib probably can't handle them
 
     # each ECU gets its own bit for ease of making OR filters
-    UNKNOWN      = 0b00000001 # unknowns get their own bit, since they need to be accepted by the ALL filter
-    ENGINE       = 0b00000010
+    UNKNOWN = 0b00000001  # unknowns get their own bit, since they need to be accepted by the ALL filter
+    ENGINE = 0b00000010
     TRANSMISSION = 0b00000100
 
 
 class Frame(object):
     """ represents a single parsed line of OBD output """
+
     def __init__(self, raw):
-        self.raw       = raw
-        self.data      = bytearray()
-        self.priority  = None
+        self.raw = raw
+        self.data = bytearray()
+        self.priority = None
         self.addr_mode = None
-        self.rx_id     = None
-        self.tx_id     = None
-        self.type      = None
-        self.seq_index = 0 # only used when type = CF
-        self.data_len  = None
+        self.rx_id = None
+        self.tx_id = None
+        self.type = None
+        self.seq_index = 0  # only used when type = CF
+        self.data_len = None
 
 
 class Message(object):
     """ represents a fully parsed OBD message of one or more Frames (lines) """
+
     def __init__(self, frames):
         self.frames = frames
-        self.ecu    = ECU.UNKNOWN
-        self.data   = bytearray()
+        self.ecu = ECU.UNKNOWN
+        self.data = bytearray()
 
     @property
     def tx_id(self):
@@ -111,8 +112,6 @@ class Message(object):
             return False
 
 
-
-
 """
 
 Protocol objects are factories for Frame and Message objects. They are
@@ -124,17 +123,16 @@ list of Messages.
 
 """
 
-class Protocol(object):
 
+class Protocol(object):
     # override in subclass for each protocol
 
-    ELM_NAME = "" # the ELM's name for this protocol (ie, "SAE J1939 (CAN 29/250)")
-    ELM_ID = ""   # the ELM's ID for this protocol (ie, "A")
+    ELM_NAME = ""  # the ELM's name for this protocol (ie, "SAE J1939 (CAN 29/250)")
+    ELM_ID = ""  # the ELM's ID for this protocol (ie, "A")
 
     # the TX_IDs of known ECUs
     TX_ID_ENGINE = None
     TX_ID_TRANSMISSION = None
-
 
     def __init__(self, lines_0100):
         """
@@ -158,10 +156,9 @@ class Protocol(object):
 
         # log out the ecu map
         for tx_id, ecu in self.ecu_map.items():
-            names = [k for k in ECU.__dict__ if ECU.__dict__[k] == ecu ]
+            names = [k for k, v in ECU.__dict__.items() if v == ecu]
             names = ", ".join(names)
             logger.debug("map ECU %d --> %s" % (tx_id, names))
-
 
     def __call__(self, lines):
         """
@@ -185,7 +182,7 @@ class Protocol(object):
             if isHex(line_no_spaces):
                 obd_lines.append(line_no_spaces)
             else:
-                non_obd_lines.append(line) # pass the original, un-scrubbed line
+                non_obd_lines.append(line)  # pass the original, un-scrubbed line
 
         # ---------------------- handle valid OBD lines ----------------------
 
@@ -199,7 +196,6 @@ class Protocol(object):
             # drop frames that couldn't be parsed
             if self.parse_frame(frame):
                 frames.append(frame)
-
 
         # group frames by transmitting ECU
         # frames_by_ECU[tx_id] = [Frame, Frame]
@@ -229,10 +225,9 @@ class Protocol(object):
         for line in non_obd_lines:
             # give each line its own message object
             # messages are ECU.UNKNOWN by default
-            messages.append( Message([ Frame(line) ]) )
+            messages.append(Message([Frame(line)]))
 
         return messages
-
 
     def populate_ecu_map(self, messages):
         """
@@ -245,7 +240,7 @@ class Protocol(object):
 
         # filter out messages that don't contain any data
         # this will prevent ELM responses from being mapped to ECUs
-        messages = [ m for m in messages if m.parsed() ]
+        messages = [m for m in messages if m.parsed()]
 
         # populate the map
         if len(messages) == 0:
@@ -279,7 +274,7 @@ class Protocol(object):
                 tx_id = None
 
                 for message in messages:
-                    bits = bitarray(message.data).num_set()
+                    bits = BitArray(message.data).num_set()
 
                     if bits > best:
                         best = bits
@@ -292,7 +287,6 @@ class Protocol(object):
                 if m.tx_id not in self.ecu_map:
                     self.ecu_map[m.tx_id] = ECU.UNKNOWN
 
-
     def parse_frame(self, frame):
         """
             override in subclass for each protocol
@@ -304,7 +298,6 @@ class Protocol(object):
             found, this function should return False, and the Frame will be dropped.
         """
         raise NotImplementedError()
-
 
     def parse_message(self, message):
         """
