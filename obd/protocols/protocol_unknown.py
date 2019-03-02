@@ -35,7 +35,6 @@ from .protocol import *
 
 
 class UnknownProtocol(Protocol):
-
     """
         Class representing an unknown protocol.
 
@@ -44,7 +43,7 @@ class UnknownProtocol(Protocol):
     """
 
     def parse_frame(self, frame):
-        return True # pass everything
+        return True  # pass everything
 
     def parse_message(self, message):
-        return True # pass everything
+        return True  # pass everything

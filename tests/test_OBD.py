@@ -1,16 +1,13 @@
-
 """
     Tests for the API layer
 """
 
 import obd
-from obd import Unit
 from obd import ECU
-from obd.protocols.protocol import Message
-from obd.utils import OBDStatus
 from obd.OBDCommand import OBDCommand
 from obd.decoders import noop
-
+from obd.protocols.protocol import Message
+from obd.utils import OBDStatus
 
 
 class FakeELM:
@@ -18,24 +15,27 @@ class FakeELM:
         Fake ELM327 driver class for intercepting the commands from the API
     """
 
-    def __init__(self, portname, UNUSED_baudrate=None, UNUSED_protocol=None):
-        self._portname = portname
+    def __init__(self, port_name):
+        self._port_name = port_name
         self._status = OBDStatus.CAR_CONNECTED
         self._last_command = None
 
     def port_name(self):
-        return self._portname
+        return self._port_name
 
     def status(self):
         return self._status
 
-    def ecus(self):
-        return [ ECU.ENGINE, ECU.UNKNOWN ]
+    @staticmethod
+    def ecus():
+        return [ECU.ENGINE, ECU.UNKNOWN]
 
-    def protocol_name(self):
+    @staticmethod
+    def protocol_name():
         return "ISO 15765-4 (CAN 11/500)"
 
-    def protocol_id(self):
+    @staticmethod
+    def protocol_id():
         return "6"
 
     def close(self):
@@ -49,8 +49,8 @@ class FakeELM:
         # all commands succeed
         message = Message([])
         message.data = bytearray(b'response data')
-        message.ecu = ECU.ENGINE # picked engine so that simple commands like RPM will work
-        return [ message ]
+        message.ecu = ECU.ENGINE  # picked engine so that simple commands like RPM will work
+        return [message]
 
     def _test_last_command(self, expected):
         r = self._last_command == expected
@@ -59,16 +59,13 @@ class FakeELM:
 
 
 # a toy command to test with
-command = OBDCommand("Test_Command", \
-                     "A test command", \
-                     "0123456789ABCDEF", \
-                     0, \
-                     noop, \
-                     ECU.ALL, \
+command = OBDCommand("Test_Command",
+                     "A test command",
+                     "0123456789ABCDEF",
+                     0,
+                     noop,
+                     ECU.ALL,
                      True)
-
-
-
 
 
 def test_is_connected():
@@ -122,10 +119,10 @@ def test_port_name():
     """
     o = obd.OBD("/dev/null")
     o.interface = FakeELM("/dev/null")
-    assert o.port_name() == o.interface._portname
+    assert o.port_name() == o.interface._port_name
 
     o.interface = FakeELM("A different port name")
-    assert o.port_name() == o.interface._portname
+    assert o.port_name() == o.interface._port_name
 
 
 def test_protocol_name():
@@ -148,16 +145,13 @@ def test_protocol_id():
     assert o.protocol_id() == o.interface.protocol_id()
 
 
-
-
-
-
 """
     The following tests are for the query() function
 """
 
+
 def test_force():
-    o = obd.OBD("/dev/null", fast=False) # disable the trailing response count byte
+    o = obd.OBD("/dev/null", fast=False)  # disable the trailing response count byte
     o.interface = FakeELM("/dev/null")
 
     r = o.query(obd.commands.RPM)
@@ -173,9 +167,8 @@ def test_force():
     assert r.is_null()
     assert o.interface._test_last_command(None)
 
-    r = o.query(command, force=True)
+    o.query(command, force=True)
     assert o.interface._test_last_command(command.command)
-
 
 
 def test_fast():
@@ -183,5 +176,5 @@ def test_fast():
     o.interface = FakeELM("/dev/null")
 
     assert command.fast
-    o.query(command, force=True) # force since this command isn't in the tables
+    o.query(command, force=True)  # force since this command isn't in the tables
     # assert o.interface._test_last_command(command.command)

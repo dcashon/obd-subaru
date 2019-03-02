@@ -39,7 +39,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class OBDCommand():
+class OBDCommand:
     def __init__(self,
                  name,
                  desc,
@@ -49,14 +49,14 @@ class OBDCommand():
                  ecu=ECU.ALL,
                  fast=False,
                  header=ECU_HEADER.ENGINE):
-        self.name      = name        # human readable name (also used as key in commands dict)
-        self.desc      = desc        # human readable description
-        self.command   = command     # command string
-        self.bytes     = _bytes      # number of bytes expected in return
-        self.decode    = decoder     # decoding function
-        self.ecu       = ecu         # ECU ID from which this command expects messages from
-        self.fast      = fast        # can an extra digit be added to the end of the command? (to make the ELM return early)
-        self.header    = header      # ECU header used for the queries
+        self.name = name  # human readable name (also used as key in commands dict)
+        self.desc = desc  # human readable description
+        self.command = command  # command string
+        self.bytes = _bytes  # number of bytes expected in return
+        self.decode = decoder  # decoding function
+        self.ecu = ecu  # ECU ID from which this command expects messages from
+        self.fast = fast  # can an extra digit be added to the end of the command? (to make the ELM return early)
+        self.header = header  # ECU header used for the queries
 
     def clone(self):
         return OBDCommand(self.name,
@@ -69,41 +69,36 @@ class OBDCommand():
 
     @property
     def mode(self):
-        if len(self.command) >= 2 and \
-           isHex(self.command.decode()):
+        if len(self.command) >= 2 and isHex(self.command.decode()):
             return int(self.command[:2], 16)
         else:
             return None
 
     @property
     def pid(self):
-        if len(self.command) > 2 and \
-           isHex(self.command.decode()):
+        if len(self.command) > 2 and isHex(self.command.decode()):
             return int(self.command[2:], 16)
         else:
             return None
 
-
     def __call__(self, messages):
 
         # filter for applicable messages (from the right ECU(s))
-        for_us = lambda m: (self.ecu & m.ecu) > 0
-        messages = list(filter(for_us, messages))
+        messages = [m for m in messages if (self.ecu & m.ecu) > 0]
 
         # guarantee data size for the decoder
         for m in messages:
             self.__constrain_message_data(m)
 
-        # create the response object with the raw data recieved
+        # create the response object with the raw data received
         # and reference to original command
         r = OBDResponse(self, messages)
         if messages:
             r.value = self.decode(messages)
         else:
-            logger.info(str(self) + " did not recieve any acceptable messages")
+            logger.info(str(self) + " did not receive any acceptable messages")
 
         return r
-
 
     def __constrain_message_data(self, message):
         """ pads or chops the data field to the size specified by this command """
@@ -117,7 +112,6 @@ class OBDCommand():
                 message.data += (b'\x00' * (self.bytes - len(message.data)))
                 logger.debug("Message was shorter than expected. Padded message: " + repr(message.data))
 
-
     def __str__(self):
         return "%s: %s" % (self.command, self.desc)
 
@@ -127,6 +121,6 @@ class OBDCommand():
 
     def __eq__(self, other):
         if isinstance(other, OBDCommand):
-            return (self.command == other.command)
+            return self.command == other.command
         else:
             return False

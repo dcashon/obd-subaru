@@ -1,8 +1,6 @@
-
 import random
-from obd.protocols import *
-from obd.protocols.protocol import Message
 
+from obd.protocols import *
 
 CAN_11_PROTOCOLS = [
     ISO_15765_4_11bit_500k,
@@ -19,15 +17,13 @@ CAN_29_PROTOCOLS = [
 def check_message(m, num_frames, tx_id, data):
     """ generic test for correct message values """
     assert len(m.frames) == num_frames
-    assert m.tx_id       == tx_id
-    assert m.data        == bytearray(data)
-
+    assert m.tx_id == tx_id
+    assert m.data == bytearray(data)
 
 
 def test_single_frame():
-    for protocol in CAN_11_PROTOCOLS:
-        p = protocol([])
-
+    for protocol_ in CAN_11_PROTOCOLS:
+        p = protocol_([])
 
         r = p(["7E8 06 41 00 00 01 02 03"])
         assert len(r) == 1
@@ -65,15 +61,14 @@ def test_hex_straining():
         If non-hex values are sent, they should be marked as ECU.UNKNOWN
     """
 
-    for protocol in CAN_11_PROTOCOLS:
-        p = protocol([])
+    for protocol_ in CAN_11_PROTOCOLS:
+        p = protocol_([])
 
         # single non-hex message
         r = p(["12.8 Volts"])
         assert len(r) == 1
         assert r[0].ecu == ECU.UNKNOWN
         assert len(r[0].frames) == 1
-
 
         # multiple non-hex message
         r = p(["12.8 Volts", "NO DATA"])
@@ -94,14 +89,12 @@ def test_hex_straining():
         # second message: invalid, non-parsable non-hex
         assert r[1].ecu == ECU.UNKNOWN
         assert len(r[1].frames) == 1
-        assert len(r[1].data) == 0 # no data
-
+        assert len(r[1].data) == 0  # no data
 
 
 def test_multi_ecu():
-    for protocol in CAN_11_PROTOCOLS:
-        p = protocol([])
-
+    for protocol_ in CAN_11_PROTOCOLS:
+        p = protocol_([])
 
         test_case = [
             "7E8 06 41 00 00 01 02 03",
@@ -111,7 +104,7 @@ def test_multi_ecu():
 
         correct_data = [0x41, 0x00, 0x00, 0x01, 0x02, 0x03]
 
-        # seperate ECUs, single frames each
+        # separate ECUs, single frames each
         r = p(test_case)
         assert len(r) == 3
 
@@ -121,15 +114,14 @@ def test_multi_ecu():
         check_message(r[2], 1, 0x3, correct_data)
 
 
-
 def test_multi_line():
     """
         Tests that valid multiline messages are recombined into single
         messages.
     """
 
-    for protocol in CAN_11_PROTOCOLS:
-        p = protocol([])
+    for protocol_ in CAN_11_PROTOCOLS:
+        p = protocol_([])
 
         test_case = [
             "7E8 10 20 49 04 00 01 02 03",
@@ -147,11 +139,10 @@ def test_multi_line():
 
         # test a few out-of-order cases
         for n in range(4):
-            random.shuffle(test_case) # mix up the frame strings
+            random.shuffle(test_case)  # mix up the frame strings
             r = p(test_case)
             assert len(r) == 1
             check_message(r[0], len(test_case), 0x0, correct_data)
-
 
 
 def test_multi_line_missing_frames():
@@ -160,8 +151,8 @@ def test_multi_line_missing_frames():
         Tests the contiguity check, and data length byte
     """
 
-    for protocol in CAN_11_PROTOCOLS:
-        p = protocol([])
+    for protocol_ in CAN_11_PROTOCOLS:
+        p = protocol_([])
 
         test_case = [
             "7E8 10 20 49 04 00 01 02 03",
@@ -178,7 +169,6 @@ def test_multi_line_missing_frames():
             assert len(r) == 0
 
 
-
 def test_multi_line_mode_03():
     """
         Tests the special handling of mode 3 commands.
@@ -186,8 +176,8 @@ def test_multi_line_mode_03():
         in the protocol layer.
     """
 
-    for protocol in CAN_11_PROTOCOLS:
-        p = protocol([])
+    for protocol_ in CAN_11_PROTOCOLS:
+        p = protocol_([])
 
         test_case = [
             "7E8 10 20 43 04 00 01 02 03",

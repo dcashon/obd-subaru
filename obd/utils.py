@@ -30,15 +30,15 @@
 #                                                                      #
 ########################################################################
 
-import serial
 import errno
-import string
 import glob
-import sys
 import logging
+import string
+import sys
+
+import serial
 
 logger = logging.getLogger(__name__)
-
 
 
 class OBDStatus:
@@ -50,9 +50,7 @@ class OBDStatus:
     CAR_CONNECTED = "Car Connected"
 
 
-
-
-class bitarray:
+class BitArray:
     """
     Class for representing bitarrays (inefficiently)
 
@@ -65,7 +63,7 @@ class bitarray:
         self.bits = ""
         for b in _bytearray:
             v = bin(b)[2:]
-            self.bits += ("0" * (8 - len(v))) + v # pad it with zeros
+            self.bits += ("0" * (8 - len(v))) + v  # pad it with zeros
 
     def __getitem__(self, key):
         if isinstance(key, int):
@@ -76,7 +74,7 @@ class bitarray:
         elif isinstance(key, slice):
             bits = self.bits[key]
             if bits:
-                return [ b == "1" for b in bits ]
+                return [b == "1" for b in bits]
             else:
                 return []
 
@@ -100,7 +98,7 @@ class bitarray:
         return self.bits
 
     def __iter__(self):
-        return [ b == "1" for b in self.bits ].__iter__()
+        return [b == "1" for b in self.bits].__iter__()
 
 
 def bytes_to_int(bs):
@@ -108,9 +106,10 @@ def bytes_to_int(bs):
     v = 0
     p = 0
     for b in reversed(bs):
-        v += b * (2**p)
+        v += b * (2 ** p)
         p += 8
     return v
+
 
 def bytes_to_hex(bs):
     h = ""
@@ -119,14 +118,17 @@ def bytes_to_hex(bs):
         h += ("0" * (2 - len(bh))) + bh
     return h
 
+
 def twos_comp(val, num_bits):
     """compute the 2's compliment of int value val"""
-    if( (val&(1<<(num_bits-1))) != 0 ):
-        val = val - (1<<num_bits)
+    if ((val & (1 << (num_bits - 1))) != 0):
+        val = val - (1 << num_bits)
     return val
+
 
 def isHex(_hex):
     return all([c in string.hexdigits for c in _hex])
+
 
 def contiguous(l, start, end):
     """ checks that a list of integers are consequtive """
@@ -139,7 +141,7 @@ def contiguous(l, start, end):
 
     # for consequtiveness, look at the integers in pairs
     pairs = zip(l, l[1:])
-    if not all([p[0]+1 == p[1] for p in pairs]):
+    if not all([p[0] + 1 == p[1] for p in pairs]):
         return False
 
     return True
@@ -149,13 +151,13 @@ def try_port(portStr):
     """returns boolean for port availability"""
     try:
         s = serial.Serial(portStr)
-        s.close() # explicit close 'cause of delayed GC in java
+        s.close()  # explicit close 'cause of delayed GC in java
         return True
 
     except serial.SerialException:
         pass
     except OSError as e:
-        if e.errno != errno.ENOENT: # permit "no such file or directory" errors
+        if e.errno != errno.ENOENT:  # permit "no such file or directory" errors
             raise e
 
     return False
