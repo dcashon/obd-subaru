@@ -56,6 +56,7 @@ class ELM327:
     """
 
     ELM_PROMPT = b'>'
+    ELM_LP_ACTIVE = b'OK'
 
     _SUPPORTED_PROTOCOLS = {
         # "0" : None,
@@ -103,7 +104,7 @@ class ELM327:
     _TRY_BAUDS = [38400, 9600, 230400, 115200, 57600, 19200]
 
     def __init__(self, portname, baudrate, protocol, timeout,
-                 check_voltage=True):
+                 check_voltage=True, start_low_power=False):
         """Initializes port by resetting device and gettings supported PIDs. """
 
         logger.info("Initializing ELM327: PORT=%s BAUD=%s PROTOCOL=%s" %
@@ -116,6 +117,7 @@ class ELM327:
         self.__status = OBDStatus.NOT_CONNECTED
         self.__port = None
         self.__protocol = UnknownProtocol([])
+        self.__low_power = False
         self.timeout = timeout
 
         # ------------- open port -------------
@@ -131,6 +133,11 @@ class ELM327:
         except OSError as e:
             self.__error(e)
             return
+
+        # If we start with the IC in the low power state we need to wake it up
+        if start_low_power:
+            self.__write(b" ")
+            time.sleep(1)
 
         # ------------------------ find the ELM's baud ------------------------
 
@@ -362,6 +369,62 @@ class ELM327:
     def protocol_id(self):
         return self.__protocol.ELM_ID
 
+    def low_power(self):
+        """
+            Enter Low Power mode
+
+            This command causes the ELM327 to shut off all but essential
+            services.
+
+            The ELM327 can be woken up by a message to the RS232 bus as
+            well as a few other ways. See the Power Control section in
+            the ELM327 datasheet for details on other ways to wake up
+            the chip.
+
+            Returns the status from the ELM327, 'OK' means low power mode
+            is going to become active.
+        """
+
+        if self.__status == OBDStatus.NOT_CONNECTED:
+            logger.info("cannot enter low power when unconnected")
+            return None
+
+        lines = self.__send(b"ATLP", delay=1)
+
+        if 'OK' in lines:
+            logger.debug("Successfully entered low power mode")
+            self.__low_power = True
+        else:
+            logger.debug("Failed to enter low power mode")
+
+        return lines
+
+    def normal_power(self):
+        """
+            Exit Low Power mode
+
+            Send a space to trigger the RS232 to wakeup.
+
+            This will send a space even if we aren't in low power mode as
+            we want to ensure that we will be able to leave low power mode.
+
+            See the Power Control section in the ELM327 datasheet for details
+            on other ways to wake up the chip.
+
+            Returns the status from the ELM327.
+        """
+        if self.__status == OBDStatus.NOT_CONNECTED:
+            logger.info("cannot exit low power when unconnected")
+            return None
+
+        lines = self.__send(b" ")
+
+        # Assume we woke up
+        logger.debug("Successfully exited low power mode")
+        self.__low_power = False
+
+        return lines
+
     def close(self):
         """
             Resets the device, and sets all
@@ -392,6 +455,10 @@ class ELM327:
         if self.__status == OBDStatus.NOT_CONNECTED:
             logger.info("cannot send_and_parse() when unconnected")
             return None
+
+        # Check if we are in low power
+        if self.__low_power == True:
+            self.normal_power()
 
         lines = self.__send(cmd)
         messages = self.__protocol(lines)
@@ -466,8 +533,9 @@ class ELM327:
 
             buffer.extend(data)
 
-            # end on chevron (ELM prompt character)
-            if self.ELM_PROMPT in buffer:
+            # end on chevron (ELM prompt character) or an 'OK' which
+            # indicates we are entering low power state
+            if self.ELM_PROMPT in buffer or self.ELM_LP_ACTIVE in buffer:
                 break
 
         # log, and remove the "bytearray(   ...   )" part

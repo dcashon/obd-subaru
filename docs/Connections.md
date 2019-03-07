@@ -20,7 +20,7 @@ connection = obd.OBD(ports[0]) # connect to the first port in the list
 
 <br>
 
-### OBD(portstr=None, baudrate=None, protocol=None, fast=True, timeout=0.1, check_voltage=True):
+### OBD(portstr=None, baudrate=None, protocol=None, fast=True, timeout=0.1, check_voltage=True, start_low_power=False):
 
 `portstr`: The UNIX device file or Windows COM Port for your adapter. The default value (`None`) will auto select a port.
 
@@ -38,6 +38,8 @@ Disabling fast mode will guarantee that python-OBD outputs the unaltered command
 `timeout`: Specifies the connection timeout in seconds.
 
 `check_voltage`: Optional argument that is `True` by default and when set to `False` disables the detection of the car supply voltage on OBDII port (which should be about 12V). This control assumes that, if the voltage is lower than 6V, the OBDII port is disconnected from the car. If the option is enabled, it adds the `OBDStatus.OBD_CONNECTED` status, which is set when enough voltage is returned (socket connected to the car) but the ignition is off (no communication with the vehicle). Setting the option to `False` should be needed when the adapter does not support the voltage pin or more generally when the hardware provides unreliable results, or if the pin reads the switched ignition voltage rather than the battery positive (this depends on the car).
+
+`start_low_power`: Optional argument that defaults to `False`. If set to `True` the initial connection will take longer (roughly 1 more second) but will support waking the ELM327 from low power mode before starting the connection. It does this by sending a space to the chip to trigger a charecter being received on the RS232 input line. This is sent before the baud rate is setup, to ensure the device is awake to detect the baud rate.
 
 <br>
 
