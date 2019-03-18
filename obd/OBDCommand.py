@@ -114,6 +114,9 @@ class OBDCommand:
 
     def __str__(self):
         return "%s: %s" % (self.command, self.desc)
+    
+    def __repr(self):
+        return "OBDCommand(%s, %s)" % (self.name, self.command)
 
     def __hash__(self):
         # needed for using commands as keys in a dict (see async.py)
