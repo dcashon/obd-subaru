@@ -61,7 +61,7 @@ class FakeELM:
 # a toy command to test with
 command = OBDCommand("Test_Command",
                      "A test command",
-                     "0123456789ABCDEF",
+                     b"0123456789ABCDEF",
                      0,
                      noop,
                      ECU.ALL,
