@@ -65,7 +65,8 @@ class OBDCommand:
                           self.bytes,
                           self.decode,
                           self.ecu,
-                          self.fast)
+                          self.fast,
+                          self.header)
 
     @property
     def mode(self):
@@ -106,24 +107,30 @@ class OBDCommand:
             if len(message.data) > self.bytes:
                 # chop off the right side
                 message.data = message.data[:self.bytes]
-                logger.debug("Message was longer than expected. Trimmed message: " + repr(message.data))
+                logger.debug(
+                    "Message was longer than expected. Trimmed message: " +
+                    repr(message.data))
             elif len(message.data) < self.bytes:
                 # pad the right with zeros
                 message.data += (b'\x00' * (self.bytes - len(message.data)))
-                logger.debug("Message was shorter than expected. Padded message: " + repr(message.data))
+                logger.debug(
+                    "Message was shorter than expected. Padded message: " +
+                    repr(message.data))
 
     def __str__(self):
+        if self.header != ECU_HEADER.ENGINE:
+            return "%s: %s" % (self.header + self.command, self.desc)
         return "%s: %s" % (self.command, self.desc)
-    
+
     def __repr(self):
         return "OBDCommand(%s, %s)" % (self.name, self.command)
 
     def __hash__(self):
         # needed for using commands as keys in a dict (see async.py)
-        return hash(self.command)
+        return hash(self.header + self.command)
 
     def __eq__(self, other):
         if isinstance(other, OBDCommand):
-            return self.command == other.command
+            return self.command == other.command and self.header == other.header
         else:
             return False
