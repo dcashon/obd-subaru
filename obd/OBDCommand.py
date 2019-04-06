@@ -122,8 +122,22 @@ class OBDCommand:
             return "%s: %s" % (self.header + self.command, self.desc)
         return "%s: %s" % (self.command, self.desc)
 
-    def __repr(self):
-        return "OBDCommand(%s, %s)" % (self.name, self.command)
+    def __repr__(self):
+        e = self.ecu
+        if self.ecu == ECU.ALL:
+            e = "ECU.ALL"
+        if self.ecu == ECU.ENGINE:
+            e = "ECU.ENGINE"
+        if self.ecu == ECU.TRANSMISSION:
+            e = "ECU.TRANSMISSION"
+        if self.header == ECU_HEADER.ENGINE:
+            return ("OBDCommand(%s, %s, %s, %s, raw_string, ecu=%s, fast=%s)"
+                    ) % (repr(self.name), repr(self.desc), repr(self.command),
+                         self.bytes, e, self.fast)
+        return ("OBDCommand" +
+                "(%s, %s, %s, %s, raw_string, ecu=%s, fast=%s, header=%s)"
+                ) % (repr(self.name), repr(self.desc), repr(self.command),
+                     self.bytes, e, self.fast, repr(self.header))
 
     def __hash__(self):
         # needed for using commands as keys in a dict (see async.py)
