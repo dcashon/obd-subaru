@@ -103,18 +103,21 @@ class OBDCommand:
 
     def __constrain_message_data(self, message):
         """ pads or chops the data field to the size specified by this command """
+        len_msg_data = len(message.data)
         if self.bytes > 0:
-            if len(message.data) > self.bytes:
+            if len_msg_data > self.bytes:
                 # chop off the right side
                 message.data = message.data[:self.bytes]
                 logger.debug(
-                    "Message was longer than expected. Trimmed message: " +
+                    "Message was longer than expected (%s>%s). " +
+                    "Trimmed message: %s", len_msg_data, self.bytes,
                     repr(message.data))
-            elif len(message.data) < self.bytes:
+            elif len_msg_data < self.bytes:
                 # pad the right with zeros
-                message.data += (b'\x00' * (self.bytes - len(message.data)))
+                message.data += (b'\x00' * (self.bytes - len_msg_data))
                 logger.debug(
-                    "Message was shorter than expected. Padded message: " +
+                    "Message was shorter than expected (%s<%s). " +
+                    "Padded message: %s", len_msg_data, self.bytes,
                     repr(message.data))
 
     def __str__(self):
