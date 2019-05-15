@@ -10,7 +10,7 @@ If the command you need is not in python-OBDs tables, you can create a new `OBDC
 | decoder              | callable | Function used for decoding messages from the OBD adapter                   |
 | ecu (optional)       | ECU      | ID of the ECU this command should listen to (`ECU.ALL` by default)         |
 | fast (optional)      | bool     | Allows python-OBD to alter this command for efficieny (`False` by default) |
-| header (optional)    | string   | If set, use a custom header instead of the defalut one (7E0)               |
+| header (optional)    | string   | If set, use a custom header instead of the default one (7E0)               |
 
 
 Example
