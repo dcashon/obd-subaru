@@ -8,7 +8,7 @@ with open("README.md", "r") as readme:
 
 setup(
     name="obd",
-    version="0.7.0",
+    version="0.7.1",
     description=("Serial module for handling live sensor data from a vehicle's OBD-II port"),
     long_description=long_description,
     long_description_content_type="text/markdown",
