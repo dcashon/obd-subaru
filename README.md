@@ -61,6 +61,17 @@ Here are a handful of the supported commands (sensors). For a full list, see [th
 -   Hybrid battery pack remaining life
 -   Engine fuel rate
 
+Common Issues
+-------------
+
+### Bluetooth OBD-II Adapters
+
+There are sometimes connection issues when using a Bluetooth OBD-II adapter with some devices (the Raspberry Pi is a common problem). This can be fixed by setting the following arguments when setting up the connection:
+
+```Python
+fast=False, timeout=30
+```
+
 License
 -------
 
