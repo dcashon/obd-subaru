@@ -210,7 +210,9 @@ class ELM327:
         if protocol_ is not None:
             # an explicit protocol was specified
             if protocol_ not in self._SUPPORTED_PROTOCOLS:
-                logger.error("%s is not a valid protocol. Please use \"1\" through \"A\"")
+                logger.error(
+                    "{:} is not a valid protocol. ".format(protocol_) +
+                    "Please use \"1\" through \"A\"")
                 return False
             return self.manual_protocol(protocol_)
         else:
