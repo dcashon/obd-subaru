@@ -1,3 +1,23 @@
+# odb-subaru
+
+Live ODB2 data
+
+
+D. Cashon
+
+
+
+~~~
+python -m venv ./env
+source ./env/bin/activate
+pip install -r requirements.txt
+~~~
+
+
+<details>
+
+<summary> python-odb </summary>
+
 python-OBD
 ==========
 
@@ -84,3 +104,4 @@ This library is forked from:
 -   <https://github.com/Pbartek/pyobd-pi>
 
 Enjoy and drive safe!
+</details>

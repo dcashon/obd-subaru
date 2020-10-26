@@ -1,0 +1,10 @@
+future==0.18.2
+importlib-metadata==2.0.0
+iso8601==0.1.13
+packaging==20.4
+Pint==0.16.1
+pyparsing==2.4.7
+pyserial==3.4
+PyYAML==5.3.1
+six==1.15.0
+zipp==3.4.0
