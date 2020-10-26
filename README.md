@@ -1,7 +1,6 @@
-# odb-subaru
+#obd-subaru
 
-Live ODB2 data
-
+live obd2 data
 
 D. Cashon
 

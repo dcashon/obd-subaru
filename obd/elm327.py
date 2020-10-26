@@ -545,7 +545,7 @@ class ELM327:
 
             # end on chevron (ELM prompt character) or an 'OK' which
             # indicates we are entering low power state
-            if self.ELM_PROMPT in buffer or self.ELM_LP_ACTIVE in buffer:
+            if self.ELM_PROMPT in buffer:
                 break
 
         # log, and remove the "bytearray(   ...   )" part
