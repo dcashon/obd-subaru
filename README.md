@@ -1,6 +1,10 @@
-#obd-subaru
+# obd-subaru
 
 live obd2 data
+
+# ELM327 Emulation for local testing
+
+https://github.com/Ircama/ELM327-emulator
 
 D. Cashon
 
